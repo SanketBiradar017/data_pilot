@@ -1,0 +1,10 @@
+.venv
+.git
+frontend/node_modules
+frontend/dist
+data/app.db
+data/uploads
+data/processed
+storage/reports
+**/__pycache__
+.env

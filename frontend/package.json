@@ -1,0 +1,33 @@
+{
+  "name": "datapilot-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.105.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.64.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.6",
+    "recharts": "^2.15.4"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.6.2",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vitest": "^4.1.12"
+  }
+}

@@ -1,0 +1,301 @@
+customer_id,segment,country,lifetime_value
+1,Small Business,IN,2012.69
+2,Consumer,US,2007.18
+3,Consumer,UK,637.3
+4,Small Business,US,367.21
+5,Corporate,DE,775.78
+6,Corporate,IN,1520.48
+7,Small Business,IN,1783.17
+8,Small Business,DE,1155.2
+9,Small Business,BR,1277.64
+10,Small Business,UK,1205.54
+11,Small Business,US,317.73
+12,Small Business,US,394.04
+13,Small Business,US,2538.79
+14,Corporate,DE,1151.97
+15,Consumer,DE,205.9
+16,Small Business,BR,1322.92
+17,Small Business,US,547.38
+18,Consumer,UK,1865.11
+19,Corporate,BR,1752.91
+20,Corporate,US,1472.13
+21,Corporate,DE,1144.12
+22,Small Business,US,2123.12
+23,Corporate,DE,2245.75
+24,Small Business,BR,557.08
+25,Small Business,UK,1462.85
+26,Small Business,UK,704.0
+27,Corporate,DE,503.21
+28,Consumer,IN,2244.65
+29,Small Business,BR,1599.63
+30,Consumer,US,1200.82
+31,Consumer,DE,593.94
+32,Consumer,IN,2282.01
+33,Consumer,US,541.98
+34,Small Business,BR,460.69
+35,Corporate,UK,1024.36
+36,Consumer,DE,1520.32
+37,Consumer,BR,824.8
+38,Consumer,IN,6449.23
+39,Small Business,BR,1133.11
+40,Small Business,IN,702.1
+41,Consumer,UK,754.19
+42,Consumer,IN,2700.57
+43,Corporate,IN,966.24
+44,Small Business,UK,2200.41
+45,Consumer,US,289.67
+46,Small Business,IN,1886.7
+47,Consumer,DE,613.64
+48,Consumer,IN,1621.98
+49,Corporate,US,610.21
+50,Consumer,DE,789.07
+51,Consumer,BR,492.9
+52,Consumer,BR,1639.97
+53,Consumer,BR,1789.79
+54,Small Business,UK,627.04
+55,Consumer,US,349.08
+56,Consumer,DE,2182.6
+57,Consumer,DE,677.52
+58,Consumer,UK,935.26
+59,Corporate,US,553.74
+60,Small Business,US,1549.52
+61,Consumer,UK,1572.06
+62,Small Business,IN,2388.12
+63,Corporate,US,1918.3
+64,Consumer,US,1843.33
+65,Small Business,UK,989.1
+66,Consumer,BR,915.24
+67,Corporate,BR,1537.02
+68,Corporate,DE,955.21
+69,Corporate,US,1955.84
+70,Consumer,US,530.07
+71,Consumer,BR,285.1
+72,Small Business,DE,1433.38
+73,Small Business,US,733.71
+74,Consumer,BR,475.68
+75,Corporate,DE,3227.44
+76,Small Business,UK,1046.2
+77,Consumer,DE,401.41
+78,Corporate,UK,677.91
+79,Small Business,BR,867.4
+80,Small Business,IN,1416.03
+81,Corporate,US,680.21
+82,Small Business,IN,944.0
+83,Corporate,US,1225.67
+84,Consumer,DE,1363.8
+85,Small Business,IN,987.0
+86,Consumer,US,2676.42
+87,Consumer,IN,1559.11
+88,Corporate,UK,1509.21
+89,Small Business,IN,1477.19
+90,Small Business,DE,1964.47
+91,Small Business,US,1177.11
+92,Corporate,IN,524.08
+93,Corporate,UK,1325.62
+94,Corporate,BR,1425.58
+95,Consumer,BR,2139.91
+96,Corporate,US,488.19
+97,Consumer,IN,573.14
+98,Consumer,UK,1067.01
+99,Small Business,IN,1501.81
+100,Small Business,DE,426.75
+101,Consumer,UK,497.54
+102,Consumer,IN,1711.9
+103,Consumer,UK,439.4
+104,Consumer,BR,578.55
+105,Small Business,BR,1774.66
+106,Small Business,US,1489.04
+107,Small Business,IN,684.86
+108,Corporate,BR,1390.17
+109,Consumer,US,1237.01
+110,Consumer,IN,963.35
+111,Small Business,BR,811.76
+112,Small Business,UK,1358.14
+113,Corporate,DE,467.17
+114,Corporate,IN,1349.01
+115,Small Business,UK,1169.35
+116,Small Business,UK,1220.02
+117,Consumer,UK,561.49
+118,Corporate,UK,2170.45
+119,Consumer,IN,686.41
+120,Corporate,UK,758.12
+121,Corporate,UK,939.94
+122,Consumer,BR,1487.02
+123,Consumer,DE,1198.27
+124,Corporate,BR,339.52
+125,Corporate,IN,1037.05
+126,Small Business,BR,1090.11
+127,Consumer,US,2200.38
+128,Consumer,BR,858.42
+129,Small Business,BR,1412.65
+130,Small Business,US,4065.66
+131,Small Business,UK,1989.05
+132,Small Business,DE,540.67
+133,Small Business,DE,1602.58
+134,Corporate,IN,1352.35
+135,Small Business,IN,840.66
+136,Corporate,UK,1613.32
+137,Small Business,IN,535.15
+138,Corporate,BR,695.58
+139,Corporate,DE,946.12
+140,Small Business,BR,816.22
+141,Corporate,IN,1513.98
+142,Consumer,BR,1019.78
+143,Small Business,BR,765.02
+144,Corporate,US,1970.38
+145,Small Business,BR,1481.07
+146,Corporate,US,389.64
+147,Small Business,BR,384.14
+148,Corporate,BR,768.49
+149,Small Business,UK,424.93
+150,Small Business,US,1793.94
+151,Consumer,DE,717.19
+152,Small Business,UK,1411.62
+153,Small Business,DE,1589.72
+154,Corporate,US,255.79
+155,Small Business,US,738.44
+156,Small Business,DE,919.64
+157,Corporate,IN,1229.83
+158,Corporate,UK,1736.76
+159,Small Business,UK,3308.54
+160,Consumer,US,2528.05
+161,Corporate,UK,1012.39
+162,Small Business,UK,1005.07
+163,Small Business,UK,2380.65
+164,Consumer,UK,1046.33
+165,Consumer,UK,727.75
+166,Corporate,IN,1810.74
+167,Small Business,UK,1265.21
+168,Corporate,IN,379.8
+169,Consumer,IN,863.15
+170,Consumer,IN,434.44
+171,Corporate,DE,143.69
+172,Corporate,BR,2725.12
+173,Consumer,UK,1128.39
+174,Corporate,BR,883.36
+175,Corporate,UK,764.71
+176,Consumer,US,1058.36
+177,Consumer,BR,758.55
+178,Corporate,BR,547.35
+179,Small Business,US,787.33
+180,Small Business,DE,2250.1
+181,Corporate,DE,1787.35
+182,Consumer,UK,787.98
+183,Small Business,DE,2880.75
+184,Small Business,IN,1005.05
+185,Consumer,DE,631.67
+186,Corporate,DE,1298.36
+187,Consumer,BR,2451.13
+188,Small Business,UK,2190.26
+189,Small Business,IN,652.39
+190,Consumer,UK,474.55
+191,Small Business,BR,833.94
+192,Corporate,UK,1426.67
+193,Corporate,BR,1653.26
+194,Consumer,IN,2017.05
+195,Small Business,UK,1165.5
+196,Corporate,IN,1188.31
+197,Small Business,UK,1140.11
+198,Consumer,UK,1870.61
+199,Corporate,UK,1669.95
+200,Consumer,IN,637.09
+201,Small Business,UK,1554.56
+202,Corporate,DE,1802.71
+203,Small Business,DE,1884.53
+204,Consumer,US,1266.05
+205,Small Business,UK,1225.8
+206,Consumer,UK,1031.64
+207,Corporate,UK,1097.24
+208,Consumer,BR,2634.85
+209,Consumer,UK,1119.38
+210,Corporate,DE,670.75
+211,Consumer,IN,1281.8
+212,Corporate,IN,1634.72
+213,Small Business,IN,1840.56
+214,Consumer,DE,543.13
+215,Small Business,BR,2336.39
+216,Consumer,BR,1599.86
+217,Consumer,UK,2262.81
+218,Corporate,US,413.23
+219,Corporate,UK,1925.15
+220,Corporate,BR,525.57
+221,Consumer,BR,895.04
+222,Corporate,IN,1629.67
+223,Consumer,IN,491.11
+224,Consumer,UK,754.82
+225,Small Business,DE,407.82
+226,Consumer,US,1605.14
+227,Corporate,DE,630.14
+228,Corporate,US,1077.0
+229,Consumer,US,1353.82
+230,Small Business,BR,1273.27
+231,Corporate,BR,1206.36
+232,Small Business,IN,1204.98
+233,Corporate,IN,427.37
+234,Small Business,UK,925.55
+235,Small Business,DE,1198.65
+236,Consumer,IN,1123.01
+237,Small Business,DE,991.65
+238,Small Business,UK,686.55
+239,Corporate,UK,1257.14
+240,Consumer,BR,1394.86
+241,Corporate,UK,818.98
+242,Small Business,BR,1847.76
+243,Corporate,IN,2363.68
+244,Consumer,BR,1089.79
+245,Corporate,DE,646.3
+246,Small Business,UK,486.96
+247,Consumer,US,887.08
+248,Corporate,DE,1042.47
+249,Consumer,UK,469.34
+250,Small Business,US,870.46
+251,Small Business,BR,1793.68
+252,Small Business,BR,224.29
+253,Corporate,UK,1130.7
+254,Consumer,IN,751.92
+255,Corporate,DE,1061.89
+256,Small Business,DE,2434.45
+257,Consumer,IN,1032.3
+258,Consumer,DE,944.44
+259,Small Business,BR,1546.98
+260,Corporate,US,1267.15
+261,Consumer,IN,1133.56
+262,Consumer,BR,1293.74
+263,Corporate,BR,2069.01
+264,Corporate,US,1729.04
+265,Small Business,US,905.39
+266,Small Business,IN,2362.81
+267,Corporate,BR,780.94
+268,Corporate,BR,1130.79
+269,Small Business,BR,1207.57
+270,Small Business,US,879.31
+271,Consumer,DE,2222.08
+272,Small Business,IN,852.61
+273,Small Business,IN,984.26
+274,Consumer,IN,1871.32
+275,Small Business,UK,799.09
+276,Consumer,DE,456.0
+277,Corporate,DE,1149.84
+278,Corporate,BR,551.55
+279,Small Business,UK,511.27
+280,Small Business,UK,228.51
+281,Corporate,US,253.88
+282,Corporate,US,269.29
+283,Small Business,BR,2535.99
+284,Small Business,BR,268.46
+285,Small Business,UK,542.31
+286,Small Business,IN,994.25
+287,Small Business,DE,1508.26
+288,Small Business,BR,1596.65
+289,Small Business,UK,646.56
+290,Consumer,BR,1118.65
+291,Corporate,UK,976.9
+292,Consumer,IN,1081.37
+293,Corporate,UK,1167.21
+294,Corporate,IN,1351.2
+295,Consumer,UK,743.13
+296,Small Business,BR,2019.86
+297,Small Business,IN,2733.08
+298,Corporate,UK,856.61
+299,Small Business,BR,3229.1
+300,Consumer,IN,771.82

@@ -1,0 +1,51 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Testing and linting
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+
+# Uploaded and processed data
+data/uploads/*
+data/processed/*
+data/chroma/*
+data/duckdb/*
+!data/uploads/.gitkeep
+!data/processed/.gitkeep
+!data/chroma/.gitkeep
+!data/duckdb/.gitkeep
+
+# Generated reports
+storage/reports/*
+!storage/reports/.gitkeep
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
