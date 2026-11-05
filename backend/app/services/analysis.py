@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from backend.app.agents.graph import run_workflow
 from backend.app.agents.state import RunContext
 from backend.app.analytics.utils import jsonable
+from backend.app.core.security import current_user_id
 from backend.app.db.session import SessionLocal
 from backend.app.models import Analysis, Dataset, User
 from backend.app.services import datasets as ds_svc
@@ -43,6 +44,7 @@ def execute_analysis(analysis_id: int) -> None:
     try:
         a = db.get(Analysis, analysis_id)
         user = db.get(User, a.owner_id)
+        current_user_id.set(user.id)  # attribute LLM tokens to the analysis owner
         dataset_ids = (a.result or {}).get("dataset_ids", [])
         a.status = "running"
         db.commit()

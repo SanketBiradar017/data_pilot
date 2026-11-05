@@ -5,6 +5,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { AuthProvider } from "./lib/auth";
 import { NumFmtProvider } from "./lib/numfmt";
+import { PlatformProvider } from "./lib/platform";
 import { initTheme } from "./lib/theme";
 import "./index.css";
 
@@ -15,7 +16,7 @@ const qc = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWin
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={qc}>
-      <BrowserRouter><AuthProvider><NumFmtProvider><App /></NumFmtProvider></AuthProvider></BrowserRouter>
+      <BrowserRouter><PlatformProvider><AuthProvider><NumFmtProvider><App /></NumFmtProvider></AuthProvider></PlatformProvider></BrowserRouter>
     </QueryClientProvider>
   </React.StrictMode>,
 );

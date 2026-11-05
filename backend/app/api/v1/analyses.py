@@ -8,6 +8,7 @@ from backend.app.core.security import get_current_user, get_db
 from backend.app.models import Analysis, User
 from backend.app.schemas.api import AnalysisIn
 from backend.app.services import analysis as svc
+from backend.app.services import entitlements as ent
 
 router = APIRouter()
 
@@ -44,6 +45,8 @@ def suggestions(dataset_ids: str, db: Session = Depends(get_db), user: User = De
 
 @router.post("", status_code=202)
 def start(body: AnalysisIn, bg: BackgroundTasks, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    ent.check_feature(db, user, "ai_agents")
+    ent.check_limit(db, user, "ai_analyses_per_month")
     a = svc.create_analysis(db, user, body.question, body.dataset_ids)
     bg.add_task(svc.execute_analysis, a.id)
     return svc.serialize(a, full=False)
@@ -57,7 +60,8 @@ def history(db: Session = Depends(get_db), user: User = Depends(get_current_user
 
 @router.get("/{aid}")
 def get_one(aid: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    return svc.serialize(_own(db, user, aid))
+    out = svc.serialize(_own(db, user, aid))
+    return out if ent.feature_state(db, user)["data_visualization"] else ent.strip_charts(out)
 
 
 @router.delete("/{aid}", status_code=204)

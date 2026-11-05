@@ -7,7 +7,7 @@ import uuid
 from pathlib import Path
 
 import pandas as pd
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from backend.app.analytics.cleaning import apply_operation
@@ -17,8 +17,10 @@ from backend.app.analytics.quality import quality_report
 from backend.app.analytics.utils import frame_records, infer_types, jsonable
 from backend.app.config import ROOT, settings
 from backend.app.core.exceptions import AppError, IngestionError, NotFound
-from backend.app.ingestion.loaders import ALLOWED_EXT, load_file, load_sql_source, safe_table_name
+from backend.app.ingestion.loaders import ALLOWED_EXT, DOC_EXT, load_file, load_sql_source, safe_table_name
 from backend.app.models import AuditLog, Dataset, User
+from backend.app.services import appconfig
+from backend.app.services import entitlements as ent
 
 log = logging.getLogger(__name__)
 
@@ -128,12 +130,23 @@ def ingest_upload(db: Session, user: User, filename: str, content: bytes) -> Dat
     settings.ensure_dirs()
     safe_name = Path(filename or "upload").name
     ext = Path(safe_name).suffix.lower()
-    if ext not in ALLOWED_EXT:
-        raise IngestionError(f"Unsupported file type '{ext or '(none)'}'. Allowed: {', '.join(sorted(ALLOWED_EXT))}")
+    cfg = appconfig.get("uploads", db)
+    allowed = {e for e in cfg["allowed_formats"] if e in ALLOWED_EXT}
+    if ext not in allowed:
+        raise IngestionError(f"Unsupported file type '{ext or '(none)'}'. Allowed: {', '.join(sorted(allowed))}")
     if not content:
         raise IngestionError("File is empty")
-    if len(content) > settings.max_upload_mb * 1024 * 1024:
-        raise IngestionError(f"File exceeds {settings.max_upload_mb} MB limit", 413)
+    max_mb = ent.effective_upload_limit_mb(db, user)
+    if len(content) > max_mb * 1024 * 1024:
+        raise IngestionError(f"File exceeds {max_mb} MB limit", 413)
+    if ext in DOC_EXT:
+        ent.check_feature(db, user, "document_research")
+    ent.check_limit(db, user, "max_datasets")
+    ent.check_limit(db, user, "storage_mb", len(content) / 1048576)
+    if cfg.get("storage_limit_gb"):
+        total = db.scalar(select(func.coalesce(func.sum(Dataset.size_bytes), 0))) or 0
+        if total + len(content) > cfg["storage_limit_gb"] * 1024**3:
+            raise IngestionError("Platform storage limit reached. Contact the administrator.", 507)
     checksum = hashlib.sha256(content).hexdigest()
     dup = db.scalar(select(Dataset).where(Dataset.owner_id == user.id, Dataset.checksum == checksum))
     if dup:
@@ -170,6 +183,7 @@ def ingest_upload(db: Session, user: User, filename: str, content: bytes) -> Dat
 
 
 def ingest_sql(db: Session, user: User, url: str, query: str | None, table: str | None, name: str) -> Dataset:
+    ent.check_limit(db, user, "max_datasets")
     df = load_sql_source(url, query, table, settings.max_query_rows * 10)
     ds = _persist_table(db, user, df, name=name, source_type="sql", original=table or "query",
                         checksum="", notes=[f"Imported from external SQL database ({url.split('@')[-1].split('?')[0]})"])

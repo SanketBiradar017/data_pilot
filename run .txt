@@ -1,4 +1,8 @@
-If make is missing, use the raw commands: 
-uv sync --extra dev, cd frontend && npm install,
-uv run uvicorn backend.app.main:app --reload --port 8000,
-cd frontend && npm run dev.
+Run from repo root (folder containing backend/). Always prefix with `uv run` — bare `uvicorn` uses system python and fails with "No module named 'backend'".
+
+cd /home/rokkun04/my_project/data_pilot.ai
+uv sync --extra dev
+uv run uvicorn backend.app.main:app --reload --port 8000
+
+Frontend (second terminal):
+cd frontend && npm install && npm run dev

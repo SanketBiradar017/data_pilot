@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.config import settings
 from backend.app.models import Analysis, Report, User
+from backend.app.services import entitlements as ent
 
 INDIGO = colors.HexColor("#4f46e5")
 
@@ -149,6 +150,8 @@ def render_xlsx(path, report: dict) -> None:
 
 
 def create_report(db: Session, user: User, analysis: Analysis, fmt: str, title: str | None) -> Report:
+    ent.check_feature(db, user, "pdf_reports" if fmt == "pdf" else "excel_reports")
+    ent.check_limit(db, user, "reports_per_month")
     report = (analysis.result or {}).get("report")
     if not report:
         from backend.app.core.exceptions import AppError
@@ -167,6 +170,8 @@ def create_report(db: Session, user: User, analysis: Analysis, fmt: str, title: 
 
 def create_report_from_payload(db: Session, user: User, payload: dict, fmt: str, title: str | None = None) -> Report:
     """Render a ready report dict (e.g. executive summary) without an analysis run."""
+    ent.check_feature(db, user, "pdf_reports" if fmt == "pdf" else "excel_reports")
+    ent.check_limit(db, user, "reports_per_month")
     settings.ensure_dirs()
     rec = Report(owner_id=user.id, analysis_id=None, title=title or payload["title"], format=fmt, file_path="")
     db.add(rec)

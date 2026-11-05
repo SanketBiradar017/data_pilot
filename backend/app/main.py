@@ -27,6 +27,12 @@ async def lifespan(app: FastAPI):
 
     with SessionLocal() as _db:
         heal_paths(_db)
+        from backend.app.api.v1.admin import bootstrap_super_admins, prune_usage_logs
+        from backend.app.services.entitlements import seed_plans
+
+        seed_plans(_db)
+        bootstrap_super_admins(_db)
+        prune_usage_logs(_db)
     log.info("Database: %s", settings.database_url.split("@")[-1])
     log.info("%s started (env=%s, llm=%s)", settings.app_name, settings.app_env, settings.llm_provider)
     yield
@@ -46,6 +52,7 @@ async def app_error(_: Request, exc: AppError):
 
 @app.exception_handler(Exception)
 async def unhandled(_: Request, exc: Exception):
+    
     log.exception("unhandled: %s", exc)
     return JSONResponse({"detail": "Internal server error"}, status_code=500)
 

@@ -5,19 +5,20 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.app.config import ROOT, settings
+from backend.app.config import ROOT
 from backend.app.core.exceptions import AppError
 from backend.app.core.security import get_current_user, get_db
 from backend.app.models import Dataset, User
 from backend.app.schemas.api import CleanIn, SqlSourceIn
 from backend.app.services import datasets as svc
+from backend.app.services import entitlements as ent
 
 router = APIRouter()
 
 
 @router.post("", status_code=201)
 async def upload(file: UploadFile = File(...), db: Session = Depends(get_db), user: User = Depends(get_current_user)):
-    limit = settings.max_upload_mb * 1024 * 1024
+    limit = ent.effective_upload_limit_mb(db, user) * 1024 * 1024
     content = await file.read(limit + 1)
     return svc.serialize(svc.ingest_upload(db, user, file.filename or "upload", content), detail=True)
 
@@ -65,6 +66,7 @@ def preview(dataset_id: int, limit: int = Query(50, ge=1, le=500), offset: int =
 
 @router.post("/{dataset_id}/clean")
 def clean(dataset_id: int, body: CleanIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    ent.check_feature(db, user, "data_cleaning")
     ds = svc.get_dataset(db, user, dataset_id)
     result = svc.clean(db, user, ds, body.op, body.column, body.strategy)
     return {**result, "dataset": svc.serialize(ds, detail=True)}

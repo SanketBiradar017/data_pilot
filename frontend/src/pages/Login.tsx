@@ -2,7 +2,8 @@ import { ArrowLeft, BarChart3, Check, Eye, EyeOff, ShieldCheck, Sparkles, Table2
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Spinner } from "../components/ui";
-import { useAuth } from "../lib/auth";
+import { Notice, useAuth } from "../lib/auth";
+import { usePlatform } from "../lib/platform";
 
 const FEATURES = [[Table2, "Any data source", "CSV, Excel, JSON, Parquet, SQL databases and documents"], [Sparkles, "Multi-agent analysis", "Planner, SQL, analytics, research and validation agents"], [ShieldCheck, "Evidence-verified", "Every numeric claim is re-computed from the raw data"]] as const;
 const AGENTS = ["Planner", "Ingestion", "Profiler", "Cleaning", "SQL", "Analytics", "Validation", "Report"];
@@ -37,12 +38,14 @@ function Ticker() {
 
 export default function Login() {
   const { login } = useAuth();
+  const platform = usePlatform();
   const [params] = useSearchParams();
   const lastEmail = (() => { try { return localStorage.getItem("datapilot.email") ?? ""; } catch { return ""; } })();
   // returning users (an email was remembered) land on Sign in even if they came via "Get started"
   const [mode, setMode] = useState<"login" | "register">(params.get("mode") === "register" && !lastEmail ? "register" : "login");
   const [f, setF] = useState({ email: lastEmail, password: "", name: "" });
   const [err, setErr] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [show, setShow] = useState(false);
   const [shake, setShake] = useState(0);
@@ -51,7 +54,7 @@ export default function Login() {
   const submit = async (e: FormEvent) => {
     e.preventDefault(); setBusy(true); setErr(null);
     try { await login(f.email, f.password, mode === "register" ? { name: f.name } : undefined); try { localStorage.setItem("datapilot.email", f.email.trim().toLowerCase()); } catch { /* ignore */ } setDone(true); }
-    catch (x) { setErr((x as Error).message); setShake((s) => s + 1); setBusy(false); }
+    catch (x) { if (x instanceof Notice) { setNotice(x.message); setMode("login"); setErr(null); } else { setErr((x as Error).message); setNotice(null); setShake((s) => s + 1); } setBusy(false); }
   };
   const strength = Math.min(4, (f.password.length >= 8 ? 1 : 0) + (/[A-Z]/.test(f.password) ? 1 : 0) + (/\d/.test(f.password) ? 1 : 0) + (/[^A-Za-z0-9]/.test(f.password) ? 1 : 0));
 
@@ -106,10 +109,12 @@ export default function Login() {
                         <div className="swap mt-2"><div className="flex gap-1">{[0, 1, 2, 3].map((k) => <span key={k} className={`h-1 flex-1 rounded-full transition-all duration-500 ${k < strength ? ["bg-red-400", "bg-amber-400", "bg-lime-400", "bg-emerald-400"][strength - 1] : "bg-white/10"}`} />)}</div>
                           <p className="mt-1 text-xs text-slate-500">At least 8 characters. Mix upper-case, numbers and symbols for strength.</p></div>)}
                     </div>
+                    {notice && <div role="status" className="swap rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">{notice}</div>}
                     {err && <div role="alert" className="swap rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{err}</div>}
                     <button className={`btn-primary w-full py-3 text-base `} disabled={busy}>{busy && <Spinner />} {mode === "login" ? "Sign in" : "Create account"}</button>
+                    {mode === "login" && !platform.registration_open ? <p className="text-center text-sm text-slate-500">New registrations are currently closed.</p> :
                     <p className="text-center text-sm text-slate-400">{mode === "login" ? "New here? " : "Already registered? "}
-                      <button type="button" className="font-medium text-brand-400 transition hover:text-brand-300 hover:underline" onClick={() => { setMode(mode === "login" ? "register" : "login"); setErr(null); }}>{mode === "login" ? "Create an account" : "Sign in"}</button></p>
+                      <button type="button" className="font-medium text-brand-400 transition hover:text-brand-300 hover:underline" onClick={() => { setMode(mode === "login" ? "register" : "login"); setErr(null); }}>{mode === "login" ? "Create an account" : "Sign in"}</button></p>}
                   </form>
                 )}
               </div>

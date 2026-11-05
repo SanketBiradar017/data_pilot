@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     max_query_rows: int = 10_000
     query_timeout_seconds: int = 30
     allow_registration: bool = True
+    # Existing accounts with these emails are promoted to super_admin at startup (comma-separated).
+    super_admin_emails: Annotated[list[str], NoDecode] = []
+    usage_log_retention_days: int = 60
 
     # Optional LLM. Without a key every agent uses deterministic logic.
     llm_provider: str = "none"  # none | anthropic | google
@@ -35,11 +38,15 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     google_api_key: str = ""
 
+    # Secrets stay in the environment (never in the DB / admin UI).
+    smtp_password: str = ""
+    payment_gateway_secret: str = ""
+
     model_config = SettingsConfigDict(
         env_file=str(ROOT / ".env"), env_file_encoding="utf-8", extra="ignore", case_sensitive=False
     )
 
-    @field_validator("cors_origins", mode="before")
+    @field_validator("cors_origins", "super_admin_emails", mode="before")
     @classmethod
     def _split_origins(cls, v):
         if isinstance(v, str):

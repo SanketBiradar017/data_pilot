@@ -6,6 +6,8 @@ import type { User } from "./types";
 interface AuthCtx { user: User | null; loading: boolean; login: (email: string, password: string, register?: { name: string }) => Promise<void>; logout: () => void; setUser: (u: User) => void }
 const Ctx = createContext<AuthCtx>(null!);
 export const useAuth = () => useContext(Ctx);
+/** Not an error: shown as a success message (e.g. "check your email"). */
+export class Notice extends Error { name = "Notice"; }
 
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -22,8 +24,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (uid && user?.preferences?.theme) setTheme(user.preferences.theme as ThemePref); /* eslint-disable-next-line */ }, [uid]);
 
   const login: AuthCtx["login"] = async (email, password, register) => {
-    const res = await (register ? api.post<{ token: string; user: User }>("/auth/register", { email, password, name: register.name })
+    const res = await (register ? api.post<{ token?: string; user?: User; verification_required?: boolean }>("/auth/register", { email, password, name: register.name })
       : api.post<{ token: string; user: User }>("/auth/login", { email, password }));
+    if (!res.token || !res.user) throw new Notice("Account created. Check your inbox for a verification link, then sign in.");
     tokenStore.set(res.token);
     setUser(res.user);
   };

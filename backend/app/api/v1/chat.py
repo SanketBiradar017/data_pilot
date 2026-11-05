@@ -14,6 +14,7 @@ from backend.app.models import Conversation, Message, User
 from backend.app.schemas.api import ConversationIn, MessageIn
 from backend.app.services import analysis as an_svc
 from backend.app.services import datasets as ds_svc
+from backend.app.services import entitlements as ent
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -75,6 +76,7 @@ def delete_conversation(cid: int, db: Session = Depends(get_db), user: User = De
 @router.post("/conversations/{cid}/messages")
 def send(cid: int, body: MessageIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     c = _own(db, user, cid)
+    ent.check_limit(db, user, "chat_messages_per_month")
     ids = body.dataset_ids or ([c.dataset_id] if c.dataset_id else [])
     user_msg = Message(conversation_id=c.id, role="user", content=body.content, payload={})
     db.add(user_msg)
@@ -108,7 +110,7 @@ def send(cid: int, body: MessageIn, db: Session = Depends(get_db), user: User = 
         analysis.finished_at = datetime.now(UTC)
         rep = state.get("report") or {}
         reply = Message(conversation_id=c.id, role="assistant", content=state.get("answer") or "No answer produced.",
-                        payload=jsonable({"analysis_id": analysis.id, "sql": rep.get("sql"), "charts": rep.get("charts", [])[:2],
+                        payload=jsonable({"analysis_id": analysis.id, "sql": rep.get("sql"), "charts": rep.get("charts", [])[:2] if ent.feature_state(db, user)["data_visualization"] else [],
                                           "evidence": rep.get("evidence", []), "citations": rep.get("citations", []),
                                           "trace": state["trace"], "validation": state.get("validation"),
                                           "result_columns": rep.get("result_columns"), "result_rows": (rep.get("result_rows") or [])[:20],

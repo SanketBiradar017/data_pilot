@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.base import Base
@@ -16,7 +16,10 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(120), default="")
     password_hash: Mapped[str] = mapped_column(String(255))
-    role: Mapped[str] = mapped_column(String(20), default="analyst")
+    role: Mapped[str] = mapped_column(String(20), default="analyst")  # analyst | admin | super_admin
+    status: Mapped[str] = mapped_column(String(20), default="active", index=True)  # active | suspended
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=True)
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     preferences: Mapped[dict] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
@@ -120,3 +123,117 @@ class AuditLog(Base):
     action: Mapped[str] = mapped_column(String(80))
     detail: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class LlmUsage(Base):
+    """One row per LLM call: token accounting for the admin panel."""
+
+    __tablename__ = "llm_usage"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    provider: Mapped[str] = mapped_column(String(20))
+    model: Mapped[str] = mapped_column(String(80), default="")
+    input_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    output_tokens: Mapped[int] = mapped_column(Integer, default=0)
+    ok: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)
+
+
+class ApiRequestLog(Base):
+    """One row per API request (route template only; never bodies, query strings or tokens)."""
+
+    __tablename__ = "api_request_logs"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    method: Mapped[str] = mapped_column(String(8))
+    route: Mapped[str] = mapped_column(String(200))
+    status_code: Mapped[int] = mapped_column(Integer)
+    duration_ms: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)
+
+
+class Plan(Base):
+    __tablename__ = "plans"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(80))
+    description: Mapped[str] = mapped_column(String(400), default="")
+    monthly_price_cents: Mapped[int] = mapped_column(Integer, default=0)
+    yearly_price_cents: Mapped[int] = mapped_column(Integer, default=0)
+    currency: Mapped[str] = mapped_column(String(3), default="INR")
+    trial_days: Mapped[int] = mapped_column(Integer, default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)  # inactive = hidden from new signups; existing subscribers keep it
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    features: Mapped[dict] = mapped_column(JSON, default=dict)  # feature key -> bool (missing = enabled)
+    limits: Mapped[dict] = mapped_column(JSON, default=dict)  # limit key -> int | null (null = unlimited)
+    rules: Mapped[dict] = mapped_column(JSON, default=dict)  # upgrade/downgrade rules
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class Subscription(Base):
+    __tablename__ = "subscriptions"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True)
+    plan_id: Mapped[int] = mapped_column(ForeignKey("plans.id"), index=True)
+    status: Mapped[str] = mapped_column(String(20), default="active")  # active | trialing | canceled
+    interval: Mapped[str] = mapped_column(String(10), default="monthly")  # monthly | yearly
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    current_period_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # null = no expiry
+    had_trial: Mapped[bool] = mapped_column(Boolean, default=False)
+    assigned_by: Mapped[int | None] = mapped_column(Integer, nullable=True)  # admin user id if manually assigned
+
+
+class PromoCode(Base):
+    __tablename__ = "promo_codes"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    code: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    description: Mapped[str] = mapped_column(String(200), default="")
+    discount_type: Mapped[str] = mapped_column(String(10))  # percent | fixed
+    value: Mapped[int] = mapped_column(Integer)  # percent (1-100) or cents
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    max_uses: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    per_user_limit: Mapped[int] = mapped_column(Integer, default=1)
+    plan_ids: Mapped[list] = mapped_column(JSON, default=list)  # empty = all plans
+    first_time_only: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)  # kept after user deletion (financial record)
+    user_email: Mapped[str] = mapped_column(String(255), default="")
+    plan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    plan_name: Mapped[str] = mapped_column(String(80), default="")
+    kind: Mapped[str] = mapped_column(String(20), default="subscription")  # subscription | renewal | refund
+    status: Mapped[str] = mapped_column(String(20), default="succeeded")  # succeeded | failed | pending | refunded
+    interval: Mapped[str] = mapped_column(String(10), default="monthly")
+    amount_cents: Mapped[int] = mapped_column(Integer, default=0)  # negative for refunds
+    discount_cents: Mapped[int] = mapped_column(Integer, default=0)
+    currency: Mapped[str] = mapped_column(String(3), default="INR")
+    gateway: Mapped[str] = mapped_column(String(30), default="manual")
+    gateway_ref: Mapped[str] = mapped_column(String(120), default="")
+    promo_code: Mapped[str] = mapped_column(String(40), default="")
+    refund_of: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    note: Mapped[str] = mapped_column(String(400), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)
+
+
+class PromoRedemption(Base):
+    __tablename__ = "promo_redemptions"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    promo_id: Mapped[int] = mapped_column(ForeignKey("promo_codes.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    transaction_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    discount_cents: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class AppSetting(Base):
+    """Runtime-editable configuration (JSON per key). Secrets are never stored here - env only."""
+
+    __tablename__ = "app_settings"
+    key: Mapped[str] = mapped_column(String(40), primary_key=True)
+    value: Mapped[dict] = mapped_column(JSON, default=dict)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
