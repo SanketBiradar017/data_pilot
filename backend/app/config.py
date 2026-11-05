@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     google_api_key: str = ""
 
+    # Master key(s) protecting admin-managed API keys at rest: Fernet keys (`python -c "from cryptography.fernet import Fernet;print(Fernet.generate_key().decode())"`),
+    # comma-separated for rotation (first encrypts, all decrypt). Required in production; in development it is derived from SECRET_KEY.
+    api_key_encryption_key: str = ""
+
     # Secrets stay in the environment (never in the DB / admin UI).
     smtp_password: str = ""
     payment_gateway_secret: str = ""

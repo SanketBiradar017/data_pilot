@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, BarChart3, BrainCircuit, Calculator, CreditCard, Database, FileText, History, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Sparkles, Terminal, X } from "lucide-react";
+import { ArrowLeft, BarChart3, BrainCircuit, Calculator, CreditCard, Database, FileText, Globe2, History, LayoutDashboard, LogOut, Menu, MessageSquare, Settings, ShieldCheck, Sparkles, Terminal, X } from "lucide-react";
 import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { api } from "../api/client";
@@ -16,6 +16,7 @@ const NAV: { to: string; label: string; icon: typeof Database; end?: boolean; fe
   { to: "/workspace", label: "Analysis workspace", icon: Sparkles, feature: "ai_agents" },
   { to: "/advanced", label: "Advanced analytics", icon: Calculator, feature: "eda" },
   { to: "/intelligence", label: "AI intelligence", icon: BrainCircuit, feature: "ai_agents" },
+  { to: "/geo-revenue", label: "Global Revenue Intelligence", icon: Globe2 },
   { to: "/chat", label: "Ask your data", icon: MessageSquare, feature: "ai_chat" },
   { to: "/sql", label: "SQL editor", icon: Terminal, feature: "sql_analysis" },
   { to: "/reports", label: "Reports", icon: FileText },
@@ -89,7 +90,7 @@ export default function Layout() {
         </header>
         {platform.announcement && <div role="status" className={clsx("px-4 py-2 text-center text-sm", { info: "bg-brand-600 text-white", warn: "bg-amber-500 text-amber-950", success: "bg-emerald-600 text-white" }[platform.announcement_tone])}>{platform.announcement}</div>}
         {platform.maintenance_mode && isAdmin && <div role="alert" className="bg-red-600 px-4 py-1.5 text-center text-xs font-medium text-white">Maintenance mode is ON — the app is offline for non-admin users.</div>}
-        {pathname.startsWith("/chat") ? (
+        {pathname.startsWith("/chat") || pathname.startsWith("/geo-revenue") ? (
           <main className="min-h-0 flex-1 overflow-hidden"><div key={pathname} className="page-enter h-full"><Outlet /></div></main>
         ) : (
           <main className="min-h-0 flex-1 overflow-y-auto"><div key={pathname} className="page-enter w-full max-w-[1680px] px-4 py-6 sm:px-8 sm:py-8"><Outlet /></div></main>

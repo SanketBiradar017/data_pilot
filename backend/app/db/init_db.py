@@ -15,6 +15,7 @@ _ADDED_COLUMNS = {
         ("last_login_at", "TIMESTAMP"),
         ("email_verified", "BOOLEAN NOT NULL DEFAULT TRUE"),
     ],
+    "llm_usage": [("api_key_id", "INTEGER")],
 }
 
 

@@ -27,7 +27,7 @@ from backend.app.models import (
     Transaction,
     User,
 )
-from backend.app.services import appconfig, billing, mailer
+from backend.app.services import ai_config, appconfig, billing, mailer
 from backend.app.services import entitlements as ent
 from backend.app.services.appconfig import FEATURES, LIMITS
 from backend.app.services.datasets import audit
@@ -513,7 +513,7 @@ _NULLABLE = {"storage_limit_gb", "temperature", "max_output_tokens", "monthly_to
 
 def _secrets_state() -> dict:
     return {"smtp_password_set": bool(settings.smtp_password), "payment_gateway_secret_set": bool(settings.payment_gateway_secret),
-            "anthropic_key_set": bool(settings.anthropic_api_key), "google_key_set": bool(settings.google_api_key)}
+            "anthropic_key_set": ai_config.has_key("anthropic"), "google_key_set": ai_config.has_key("google")}
 
 
 @router.get("/settings/{key}")

@@ -15,7 +15,10 @@ _DEFAULT_MODELS = {"anthropic": "claude-sonnet-5-5", "google": "gemini-2.0-flash
 
 
 def _key(provider: str) -> str:
-    return {"anthropic": settings.anthropic_api_key, "google": settings.google_api_key}.get(provider, "")
+    """Current API key: the active admin-managed key if any, else the environment key. Resolved per call, so changes apply live."""
+    from backend.app.services import ai_config
+
+    return ai_config.resolve(provider).key
 
 
 def ai_runtime() -> dict:
@@ -23,11 +26,20 @@ def ai_runtime() -> dict:
 
     c = appconfig.get("ai")
     provider = c["provider"] or settings.llm_provider
+    if provider in ("", "none"):  # env says "no LLM", but an admin may have activated a key: that wins
+        from backend.app.services import ai_config
+
+        provider = next((p for p in ai_config.PROVIDERS if ai_config.resolve(p).source == "admin"), provider)
     model = c["model"] or (settings.llm_model if provider == settings.llm_provider else "") or _DEFAULT_MODELS.get(provider, "")
+    from backend.app.services import ai_config
+
+    if model and not ai_config.usable_model(model):  # e.g. an API key pasted into LLM_MODEL: never send or display it
+        log.warning("Configured model name is not a valid model id (ignored, using the default). Check LLM_MODEL / the AI settings.")
+        model = _DEFAULT_MODELS.get(provider, "")
     return {"provider": provider, "model": model, "enabled": bool(_key(provider)), "cfg": c}
 
 
-def _record(provider: str, model: str, tin: int, tout: int, ok: bool) -> None:
+def _record(provider: str, model: str, tin: int, tout: int, ok: bool, key_id: int | None = None) -> None:
     try:
         from backend.app.core.security import current_user_id
         from backend.app.db.session import SessionLocal
@@ -35,7 +47,7 @@ def _record(provider: str, model: str, tin: int, tout: int, ok: bool) -> None:
 
         with SessionLocal() as db:
             db.add(LlmUsage(user_id=current_user_id.get(), provider=provider, model=model,
-                            input_tokens=tin, output_tokens=tout, ok=ok))
+                            input_tokens=tin, output_tokens=tout, ok=ok, api_key_id=key_id))
             db.commit()
     except Exception:
         log.warning("llm usage log failed", exc_info=True)
@@ -68,10 +80,15 @@ def _over_cap(cfg: dict) -> str | None:
 
 
 def _call(provider: str, model: str, system: str, prompt: str, max_tokens: int, temperature: float) -> str:
+    from backend.app.services import ai_config
+
+    rk = ai_config.resolve(provider)   # fetched fresh for every request
+    if not rk.key:
+        raise ValueError(f"no API key for {provider}")
     if provider == "anthropic":
         r = httpx.post(
             "https://api.anthropic.com/v1/messages",
-            headers={"x-api-key": _key(provider), "anthropic-version": "2023-06-01"},
+            headers={"x-api-key": rk.key, "anthropic-version": "2023-06-01"},
             json={"model": model, "max_tokens": max_tokens, "temperature": temperature,
                   "system": system, "messages": [{"role": "user", "content": prompt}]},
             timeout=60,
@@ -79,12 +96,12 @@ def _call(provider: str, model: str, system: str, prompt: str, max_tokens: int, 
         r.raise_for_status()
         body = r.json()
         u = body.get("usage") or {}
-        _record(provider, model, u.get("input_tokens", 0), u.get("output_tokens", 0), True)
+        _record(provider, model, u.get("input_tokens", 0), u.get("output_tokens", 0), True, rk.key_id)
         return "".join(b.get("text", "") for b in body["content"]).strip()
     if provider == "google":
         r = httpx.post(
             f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-            headers={"x-goog-api-key": _key(provider)},
+            headers={"x-goog-api-key": rk.key},
             json={"systemInstruction": {"parts": [{"text": system}]},
                   "contents": [{"role": "user", "parts": [{"text": prompt}]}],
                   "generationConfig": {"temperature": temperature, "maxOutputTokens": max_tokens}},
@@ -93,7 +110,7 @@ def _call(provider: str, model: str, system: str, prompt: str, max_tokens: int, 
         r.raise_for_status()
         body = r.json()
         u = body.get("usageMetadata") or {}
-        _record(provider, model, u.get("promptTokenCount", 0), u.get("candidatesTokenCount", 0), True)
+        _record(provider, model, u.get("promptTokenCount", 0), u.get("candidatesTokenCount", 0), True, rk.key_id)
         return body["candidates"][0]["content"]["parts"][0]["text"].strip()
     raise ValueError(f"unknown provider {provider}")
 
@@ -120,6 +137,14 @@ def llm_complete(system: str, prompt: str, max_tokens: int = 1200) -> str | None
         try:
             return _call(provider, model, system, prompt, max_tokens, temp)
         except Exception as e:  # network, quota, malformed response -> try fallback model
-            log.warning("LLM call failed (%s/%s): %s", provider, model, e)
-            _record(provider, model, 0, 0, False)
+            # log only the exception class and HTTP status: provider error bodies/URLs are never written
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            log.warning("LLM call failed (%s/%s): %s%s", provider, model, type(e).__name__, f" HTTP {status}" if status else "")
+            _record(provider, model, 0, 0, False, ai_config_key_id(provider))
     return None
+
+
+def ai_config_key_id(provider: str) -> int | None:
+    from backend.app.services import ai_config
+
+    return ai_config.resolve(provider).key_id

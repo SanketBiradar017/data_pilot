@@ -1,6 +1,7 @@
 import { ShieldCheck } from "lucide-react";
 import { Navigate, useParams } from "react-router-dom";
 import { PageHeader } from "../components/ui";
+import ApiKeysPanel from "./admin/ApiKeysPanel";
 import AnalyticsPanel from "./admin/AnalyticsPanel";
 import { AiPanel, FeaturesPanel, PlatformPanel } from "./admin/ConfigPanels";
 import { ADMIN_NAV } from "./admin/nav";
@@ -11,7 +12,7 @@ import PromosPanel from "./admin/PromosPanel";
 import UsersPanel from "./admin/UsersPanel";
 
 const PANELS: Record<string, () => JSX.Element> = {
-  overview: OverviewPanel, users: UsersPanel, plans: PlansPanel, promos: PromosPanel, features: FeaturesPanel, ai: AiPanel,
+  overview: OverviewPanel, users: UsersPanel, plans: PlansPanel, promos: PromosPanel, features: FeaturesPanel, ai: AiPanel, "api-keys": ApiKeysPanel,
   payments: PaymentsPanel, datasets: DatasetsPanel, analytics: AnalyticsPanel, activity: ActivityPanel, system: SystemPanel, settings: PlatformPanel,
 };
 

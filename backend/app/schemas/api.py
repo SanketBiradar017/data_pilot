@@ -210,3 +210,25 @@ class DupRowsIn(DupOptionsIn):
 class DupExportIn(DupOptionsIn):
     format: str = Field(default="csv", pattern="^(csv|xlsx)$")
     scope: str = Field(default="groups", pattern="^(groups|rows)$")
+
+
+class GeoMappingIn(BaseModel):
+    country: str | None = None
+    state: str | None = None
+    city: str | None = None
+    revenue: str | None = None
+    expense: str | None = None
+    loss: str | None = None
+    profit: str | None = None
+    date: str | None = None
+    assumed_country: str | None = Field(default=None, pattern="^[A-Z0-9]{3}$")
+
+
+class GeoSummaryIn(BaseModel):
+    dataset_id: int
+    level: str = Field(default="world", pattern="^(world|country|state|city)$")
+    country: str | None = Field(default=None, pattern="^[A-Z0-9]{3}$")
+    state: str | None = Field(default=None, max_length=200)
+    date_from: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    date_to: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$")
+    mapping: GeoMappingIn | None = None

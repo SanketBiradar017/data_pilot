@@ -1,4 +1,4 @@
-import { Activity, BarChart3, BrainCircuit, CreditCard, Database, LayoutDashboard, Receipt, Server, Settings, SlidersHorizontal, Tag, Users, type LucideIcon } from "lucide-react";
+import { Activity, BarChart3, BrainCircuit, CreditCard, KeyRound, Database, LayoutDashboard, Receipt, Server, Settings, SlidersHorizontal, Tag, Users, type LucideIcon } from "lucide-react";
 
 export const ADMIN_NAV: { slug: string; label: string; icon: LucideIcon; title: string; subtitle: string }[] = [
   { slug: "overview", label: "Overview", icon: LayoutDashboard, title: "Overview", subtitle: "Users, datasets and analyses across the platform." },
@@ -7,6 +7,7 @@ export const ADMIN_NAV: { slug: string; label: string; icon: LucideIcon; title: 
   { slug: "promos", label: "Promo Codes", icon: Tag, title: "Promo codes", subtitle: "Discounts, limits, restrictions and revenue impact." },
   { slug: "features", label: "Feature & Usage Control", icon: SlidersHorizontal, title: "Feature & usage control", subtitle: "Turn features on or off and set upload limits." },
   { slug: "ai", label: "AI Configuration", icon: BrainCircuit, title: "AI configuration", subtitle: "Provider, model, prompts, caps, fallback and cost." },
+  { slug: "api-keys", label: "API Keys", icon: KeyRound, title: "API keys", subtitle: "Encrypted provider keys, model selection, status, usage and history." },
   { slug: "payments", label: "Payments & Transactions", icon: Receipt, title: "Payments & transactions", subtitle: "Payments, refunds, renewals and gateway settings." },
   { slug: "datasets", label: "Dataset Management", icon: Database, title: "Dataset management", subtitle: "All uploaded datasets, storage and upload rules." },
   { slug: "analytics", label: "Analytics & Reports", icon: BarChart3, title: "Analytics & reports", subtitle: "Growth, revenue, feature usage, AI cost and errors." },

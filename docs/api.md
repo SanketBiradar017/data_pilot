@@ -31,3 +31,22 @@ All endpoints except `health` and `auth/*` require `Authorization: Bearer <token
 | `GET/PUT /settings` | Preferences and system info |
 
 Errors are `{"detail": "..."}` with 400/401/404/409/413/422 as appropriate.
+
+## Global Revenue Intelligence (`/api/v1/geo-revenue`)
+
+All endpoints require a bearer token; datasets are only readable by their owner (404 otherwise).
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/mapping/{dataset_id}` | Auto-detected column mapping (country, state, city, revenue, expense, loss, profit, date) with per-role confidence, alternatives, issues, and the saved mapping if any |
+| PUT | `/mapping/{dataset_id}` | Validate and save a manual mapping |
+| DELETE | `/mapping/{dataset_id}` | Forget the saved mapping (back to auto-detect) |
+| POST | `/summary` | `{dataset_id, level: world\|country\|state\|city, country?: ISO3, state?, date_from?, date_to?, mapping?}` → totals, per-region revenue/loss/profit/transactions, top/bottom/highest-loss, unmapped rows, date range |
+| GET | `/boundaries/world` | Country GeoJSON (gzip, cacheable) |
+| GET | `/boundaries/{iso3}/states` | State/province GeoJSON, loaded lazily per country |
+| GET | `/boundaries/{iso3}/cities` | City reference points (name, state, lat/lon, population) |
+
+Loss is the mapped loss column (absolute value) when present, otherwise the sum of rows with negative profit (profit = mapped profit, else revenue − expense). `loss_basis` in the response states which was used. Boundary data: Natural Earth (public domain), rebuilt with `scripts/build_geo_data.py`.
+
+## Admin API keys (`/api/v1/admin/ai-keys`, super admin only)
+`GET ""` overview (masked keys, status, usage, effective provider/model/source) · `POST ""` add `{provider, label, api_key, activate}` · `PUT /{id}` rename / replace key · `POST /{id}/test` · `POST /{id}/activate` · `POST /{id}/deactivate` · `DELETE /{id}` (inactive only) · `PUT /model` `{provider, model, verify}` · `GET /history`. Secrets are accepted on write and never returned.

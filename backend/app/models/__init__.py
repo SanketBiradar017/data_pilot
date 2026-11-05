@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.app.db.base import Base
@@ -136,6 +136,7 @@ class LlmUsage(Base):
     input_tokens: Mapped[int] = mapped_column(Integer, default=0)
     output_tokens: Mapped[int] = mapped_column(Integer, default=0)
     ok: Mapped[bool] = mapped_column(Boolean, default=True)
+    api_key_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)  # admin-managed key used; NULL = environment key
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)
 
 
@@ -237,3 +238,48 @@ class AppSetting(Base):
     key: Mapped[str] = mapped_column(String(40), primary_key=True)
     value: Mapped[dict] = mapped_column(JSON, default=dict)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class GeoMapping(Base):
+    """Confirmed column mapping for Global Revenue Intelligence, one per dataset."""
+
+    __tablename__ = "geo_mappings"
+    dataset_id: Mapped[int] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), primary_key=True)
+    mapping: Mapped[dict] = mapped_column(JSON, default=dict)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class ApiKey(Base):
+    """Admin-managed provider API key. The secret is stored only as Fernet ciphertext; `last4` is for display."""
+
+    __tablename__ = "api_keys"
+    __table_args__ = (
+        Index("uq_api_keys_one_active", "provider", unique=True, sqlite_where=text("is_active"), postgresql_where=text("is_active")),
+    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    provider: Mapped[str] = mapped_column(String(20), index=True)
+    label: Mapped[str] = mapped_column(String(80), default="")
+    ciphertext: Mapped[str] = mapped_column(Text)
+    last4: Mapped[str] = mapped_column(String(4), default="")
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    status: Mapped[str] = mapped_column(String(12), default="untested")  # untested | valid | invalid
+    status_message: Mapped[str] = mapped_column(String(200), default="")  # sanitised, never contains the key
+    last_tested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+    activated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class ApiKeyEvent(Base):
+    """Append-only change history for API keys and the model setting. Never holds secret material."""
+
+    __tablename__ = "api_key_events"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    api_key_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)  # no FK: history outlives deleted keys
+    provider: Mapped[str] = mapped_column(String(20), default="")
+    action: Mapped[str] = mapped_column(String(30))
+    actor_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    actor_email: Mapped[str] = mapped_column(String(255), default="")
+    detail: Mapped[str] = mapped_column(String(300), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)

@@ -73,7 +73,7 @@ export function AiPanel() {
             <Field label="Fallback model" hint="Used when the primary call fails"><input className="input" value={f.draft!.fallback_model} onChange={(e) => f.set("fallback_model", e.target.value)} placeholder="Provider default" /></Field>
           </div>
           <Field label="System prompt (appended to every agent prompt)" hint="Tone, policies or company context. Max 4000 characters."><textarea rows={4} className="input" maxLength={4000} value={f.draft!.system_prompt} onChange={(e) => f.set("system_prompt", e.target.value)} /></Field>
-          <SecretBadge name="ANTHROPIC_API_KEY / GOOGLE_API_KEY" set={f.q.data?.secrets?.anthropic_key_set || f.q.data?.secrets?.google_key_set} />
+          <SecretBadge name="API key (admin-managed or .env)" set={f.q.data?.secrets?.anthropic_key_set || f.q.data?.secrets?.google_key_set} /> <a className="text-xs text-brand-600 hover:underline" href="/admin/api-keys">Manage API keys & Gemini model →</a>
         </div>)}</SettingsCard>
       <SettingsCard<AiVals> group="ai" title="Usage limits (all users)" keys={["monthly_token_cap", "daily_call_cap"]}>{(f) => (
         <div className="grid gap-3 sm:grid-cols-2">

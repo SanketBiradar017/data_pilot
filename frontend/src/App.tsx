@@ -8,6 +8,7 @@ import Billing from "./pages/Billing";
 import Chat from "./pages/Chat";
 import DatasetDetail from "./pages/DatasetDetail";
 import Datasets from "./pages/Datasets";
+import GeoRevenue from "./pages/GeoRevenue";
 import History, { HistoryDetail } from "./pages/History";
 import Landing from "./pages/Landing";
 import Intelligence from "./pages/Intelligence";
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="workspace" element={<Workspace />} />
         <Route path="advanced" element={<Advanced />} />
         <Route path="intelligence" element={<Intelligence />} />
+        <Route path="geo-revenue" element={<GeoRevenue />} />
         <Route path="chat" element={<Chat />} />
         <Route path="sql" element={<SqlEditor />} />
         <Route path="reports" element={<Reports />} />

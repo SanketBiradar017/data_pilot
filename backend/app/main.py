@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -48,6 +49,12 @@ app.add_middleware(RequestContextMiddleware)
 @app.exception_handler(AppError)
 async def app_error(_: Request, exc: AppError):
     return JSONResponse({"detail": exc.message}, status_code=exc.status_code)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(_: Request, exc: RequestValidationError):
+    # FastAPI's default body echoes the submitted `input` (and `ctx`); that could leak secrets such as API keys, so only location + message go out.
+    return JSONResponse({"detail": [{"loc": list(e["loc"]), "msg": e["msg"], "type": e["type"]} for e in exc.errors()]}, status_code=422)
 
 
 @app.exception_handler(Exception)
